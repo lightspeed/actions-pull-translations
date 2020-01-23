@@ -1,0 +1,6 @@
+name: "Push Translations"
+description: "Push translations to Transifex on changes to source files on master"
+author: "Lightspeed HQ"
+runs:
+  using: "node12"
+  main: "dist/entrypoint.js"
