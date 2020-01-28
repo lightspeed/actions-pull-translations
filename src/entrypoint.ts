@@ -15,10 +15,10 @@ const run = async () => {
   }
 
   core.info(`㊗️ Pulling translations from Transifex`);
-  const { project, resource, languages } = extractParamsFromBody(body!);
-  await pullTranslations(project, resource, languages);
+  const { project, resource, languages, mode } = extractParamsFromBody(body!);
+  await pullTranslations(project, resource, languages, mode);
   await pushChangesToRemote(project, resource);
-  await createPullRequest(project, resource, languages, number);
+  await createPullRequest(project, resource, languages, mode, number);
   core.info(`Done processing new translations for ${resource}`);
 };
 
