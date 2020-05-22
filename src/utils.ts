@@ -1,20 +1,20 @@
-import _ from "lodash";
-import * as core from "@actions/core";
-import * as github from "@actions/github";
-import { command } from "execa";
-import { readFile } from "fs";
-import { render } from "mustache";
-import { inspect, promisify } from "util";
+import _ from 'lodash';
+import * as core from '@actions/core';
+import * as github from '@actions/github';
+import { command } from 'execa';
+import { readFile } from 'fs';
+import { render } from 'mustache';
+import { inspect, promisify } from 'util';
 
 const readFileAsync = promisify(readFile);
 
-type InputMode = "translated" | "reviewed" | "proofread";
-type TxMode = "translated" | "reviewed" | "reviewed2";
+type InputMode = 'translated' | 'reviewed' | 'proofread';
+type TxMode = 'translated' | 'reviewed' | 'reviewed2';
 
 const MODE_MAP: { [x in InputMode]: TxMode } = {
-  translated: "translated",
-  reviewed: "reviewed",
-  proofread: "reviewed2"
+  translated: 'translated',
+  reviewed: 'reviewed',
+  proofread: 'reviewed2'
 };
 
 /**
@@ -25,7 +25,7 @@ const runShellCommand = async (commandString: string) => {
   core.info(`$ ${commandString}`);
   try {
     const { stdout, stderr } = await command(commandString, { shell: true });
-    const output = [stdout, stderr].filter(Boolean).join("\n");
+    const output = [stdout, stderr].filter(Boolean).join('\n');
     core.info(output);
     return output;
   } catch (error) {
@@ -40,7 +40,7 @@ const runShellCommand = async (commandString: string) => {
  */
 export const extractParamsFromBody = (body: string) => {
   core.info(`Extracting parameters from issue body`);
-  const lines = body.split("\r\n");
+  const lines = body.split('\r\n');
   const [, , ...paramLines] = lines.filter(line =>
     line.match(/^\|\s*(.*?)(?=\s*\|)\s*\|\s*(.*?)(?=\s*\|)\s*\|/g)
   );
@@ -57,13 +57,15 @@ export const extractParamsFromBody = (body: string) => {
     Resource: string;
     Languages: string;
     Mode: InputMode;
+    Branch: string;
   };
 
   return {
     project: rawParams.Project,
     resource: rawParams.Resource,
-    languages: rawParams.Languages.split(","),
-    mode: rawParams.Mode
+    languages: rawParams.Languages.split(','),
+    mode: rawParams.Mode,
+    branch: rawParams.Branch
   };
 };
 
@@ -72,19 +74,27 @@ export const extractParamsFromBody = (body: string) => {
  * @param project The project namespace, i.e.: retail-pos-web
  * @param resource The resource name, i.e.: retail-reports
  * @param languages The languages to pull, i.e.: ['fr', 'de']
+ * @param mode "translated" | "reviewed" | "proofread"
+ * @param branch Base branch to pull changes from reading the correct .tx/config
  */
 export const pullTranslations = async (
   project: string,
   resource: string,
   languages: string[],
-  mode: InputMode
+  mode: InputMode,
+  branch: string
 ) => {
   core.info(`Pulling translations from Transifex`);
   const fullResource = `${project}.${resource}`;
 
+  if (branch) {
+    await runShellCommand(`git fetch`);
+    await runShellCommand(`git checkout ${branch}`);
+  }
+
   await runShellCommand(
     `tx pull --mode ${MODE_MAP[mode]} -f -l ${languages.join(
-      ","
+      ','
     )} -r ${fullResource}`
   );
 };
@@ -93,6 +103,7 @@ export const pullTranslations = async (
  * Creates a branch, makes a commit, and pushes the changes to the remote
  * @param project The project namespace, i.e.: retail-pos-web
  * @param resource The resource name, i.e.: retail-reports
+ * @param branch Base branch to push changes from, default "master"
  */
 export const pushChangesToRemote = async (
   project: string,
@@ -103,7 +114,7 @@ export const pushChangesToRemote = async (
 
   await runShellCommand(`git config --global user.name "GitHub Action"`);
   await runShellCommand(`git config --global user.email "action@github.com"`);
-  await runShellCommand("git add .");
+  await runShellCommand('git add .');
   await runShellCommand(
     `git commit -m "Auto-committed translation changes for ${fullResource}"`
   );
@@ -118,19 +129,22 @@ export const pushChangesToRemote = async (
  * @param project The project namespace, i.e.: retail-pos-web
  * @param resource The resource name, i.e.: retail-reports
  * @param languages The languages to pull, i.e.: ['fr', 'de']
- * @param issueNumber The issue number that triggered this pull
+ * @param mode "translated" | "reviewed" | "proofread"
+ * @param issueNo The issue number that triggered this pull
+ * @param branch The base branch to create the PR
  */
 export const createPullRequest = async (
   project: string,
   resource: string,
   languages: string[],
   mode: InputMode,
-  issueNo: number
+  issueNo: number,
+  branch: string = 'master'
 ) => {
-  core.info(`Creating pull request to master`);
+  core.info(`Creating pull request to ${branch}`);
   const fullResource = `${project}.${resource}`;
 
-  const template = await readFileAsync(__dirname + "/../template.md", "utf8");
+  const template = await readFileAsync(__dirname + '/../template.md', 'utf8');
   const title = `[TRANSLATIONS] Pull translations for ${resource}`;
   const body = render(template, {
     project,
@@ -140,7 +154,7 @@ export const createPullRequest = async (
     issueNo
   });
   const head = `feature/translations/${fullResource}`;
-  const base = "master";
+  const base = branch;
 
   const token = process.env.GITHUB_TOKEN!;
   const octokit = new github.GitHub(token);

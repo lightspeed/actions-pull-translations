@@ -4,7 +4,7 @@ import {
   extractParamsFromBody,
   pullTranslations,
   pushChangesToRemote,
-  createPullRequest,
+  createPullRequest
 } from './utils';
 
 const run = async () => {
@@ -15,10 +15,12 @@ const run = async () => {
   }
 
   core.info(`㊗️ Pulling translations from Transifex`);
-  const { project, resource, languages, mode } = extractParamsFromBody(body!);
-  await pullTranslations(project, resource, languages, mode);
+  const { project, resource, languages, mode, branch } = extractParamsFromBody(
+    body!
+  );
+  await pullTranslations(project, resource, languages, mode, branch);
   await pushChangesToRemote(project, resource);
-  await createPullRequest(project, resource, languages, mode, number);
+  await createPullRequest(project, resource, languages, mode, number, branch);
   core.info(`Done processing new translations for ${resource}`);
 };
 
