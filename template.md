@@ -6,5 +6,6 @@
 | Resource  | {{resource}}  |
 | Languages | {{languages}} |
 | Mode      | {{mode}}      |
+| Branch    | {{branch}}    |
 
 Closes #{{issueNo}}
