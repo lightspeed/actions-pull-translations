@@ -8,10 +8,11 @@ import { inspect, promisify } from 'util';
 
 const readFileAsync = promisify(readFile);
 
-type InputMode = 'translated' | 'reviewed' | 'proofread';
-type TxMode = 'translated' | 'reviewed' | 'reviewed2';
+type InputMode = 'untranslated' | 'translated' | 'reviewed' | 'proofread';
+type TxMode = 'developer' | 'translated' | 'reviewed' | 'reviewed2' ;
 
 const MODE_MAP: { [x in InputMode]: TxMode } = {
+  untranslated: 'developer',
   translated: 'translated',
   reviewed: 'reviewed',
   proofread: 'reviewed2'
