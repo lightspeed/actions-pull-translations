@@ -1,7 +1,7 @@
 {
   "name": "pull-translations",
   "author": "Lightspeed HQ",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "private": true,
   "description": "Pulls translations from Transifex and create a PR on GithHub",
   "main": "dist/entrypoint.js",

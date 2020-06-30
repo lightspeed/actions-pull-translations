@@ -9,7 +9,7 @@ import { inspect, promisify } from 'util';
 const readFileAsync = promisify(readFile);
 
 type InputMode = 'untranslated' | 'translated' | 'reviewed' | 'proofread';
-type TxMode = 'developer' | 'translated' | 'reviewed' | 'reviewed2' ;
+type TxMode = 'developer' | 'translated' | 'reviewed' | 'reviewed2';
 
 const MODE_MAP: { [x in InputMode]: TxMode } = {
   untranslated: 'developer',
