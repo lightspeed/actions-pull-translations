@@ -1,26 +1,22 @@
 import * as core from '@actions/core';
-import * as github from '@actions/github';
 import {
-  extractParamsFromBody,
   pullTranslations,
   pushChangesToRemote,
-  createPullRequest
+  createPullRequest,
+  InputMode,
 } from './utils';
 
 const run = async () => {
-  const { body, number, title } = github.context.payload.issue!;
-  if (!title.startsWith('[TRANSLATIONS]')) {
-    core.info(`Ignoring issue with title ${title}`);
-    process.exit(0);
-  }
-
   core.info(`㊗️ Pulling translations from Transifex`);
-  const { project, resource, languages, mode, branch } = extractParamsFromBody(
-    body!
-  );
+  const project = core.getInput('project', { required: true });
+  const resource = core.getInput('resource', { required: true });
+  const languages = core.getInput('languages', { required: true }).split(',');
+  const mode: InputMode = core.getInput('mode', { required: true }) as InputMode;
+  const branch = core.getInput('branch', { required: true });
+
   await pullTranslations(project, resource, languages, mode, branch);
   await pushChangesToRemote(project, resource);
-  await createPullRequest(project, resource, languages, mode, number, branch);
+  await createPullRequest(project, resource, languages, mode, branch);
   core.info(`Done processing new translations for ${resource}`);
 };
 
