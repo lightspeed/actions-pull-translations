@@ -1,6 +1,25 @@
-name: "Push Translations"
-description: "Push translations to Transifex on changes to source files on master"
+name: "Pull Translations"
+description: "Pull translations from Transifex for a project and resource"
 author: "Lightspeed HQ"
 runs:
   using: "node12"
   main: "dist/entrypoint.js"
+inputs:
+  project:
+    description: "Project"
+    required: true
+  resource:
+    description: "Resource"
+    required: true
+  languages:
+    description: "Languages"
+    default: "fr,de,nl,es"
+    required: true
+  mode:
+    description: "Mode to pull translations (untranslated, translated, reviewed, proofread)"
+    default: "reviewed"
+    required: true
+  branch:
+    description: "Branch name"
+    default: "master"
+    required: true

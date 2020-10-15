@@ -8,8 +8,8 @@ import { inspect, promisify } from 'util';
 
 const readFileAsync = promisify(readFile);
 
-type InputMode = 'untranslated' | 'translated' | 'reviewed' | 'proofread';
-type TxMode = 'developer' | 'translated' | 'reviewed' | 'reviewed2' ;
+export type InputMode = 'untranslated' | 'translated' | 'reviewed' | 'proofread';
+export type TxMode = 'developer' | 'translated' | 'reviewed' | 'reviewed2' ;
 
 const MODE_MAP: { [x in InputMode]: TxMode } = {
   untranslated: 'developer',
@@ -33,41 +33,6 @@ const runShellCommand = async (commandString: string) => {
     core.info(inspect(error));
     throw error;
   }
-};
-
-/**
- * Extract translation parameters from the issue body
- * @param body The issue body
- */
-export const extractParamsFromBody = (body: string) => {
-  core.info(`Extracting parameters from issue body`);
-  const lines = body.split('\r\n');
-  const [, , ...paramLines] = lines.filter(line =>
-    line.match(/^\|\s*(.*?)(?=\s*\|)\s*\|\s*(.*?)(?=\s*\|)\s*\|/g)
-  );
-
-  const rawParams = Object.fromEntries(
-    paramLines.map(line => {
-      const match = /^\|\s*(.*?)(?=\s*\|)\s*\|\s*(.*?)(?=\s*\|)\s*\|/g.exec(
-        line
-      )!;
-      return [match[1], match[2]];
-    })
-  ) as {
-    Project: string;
-    Resource: string;
-    Languages: string;
-    Mode: InputMode;
-    Branch: string;
-  };
-
-  return {
-    project: rawParams.Project,
-    resource: rawParams.Resource,
-    languages: rawParams.Languages.split(','),
-    mode: rawParams.Mode,
-    branch: rawParams.Branch
-  };
 };
 
 /**
@@ -131,7 +96,6 @@ export const pushChangesToRemote = async (
  * @param resource The resource name, i.e.: retail-reports
  * @param languages The languages to pull, i.e.: ['fr', 'de']
  * @param mode "translated" | "reviewed" | "proofread"
- * @param issueNo The issue number that triggered this pull
  * @param branch The base branch to create the PR
  */
 export const createPullRequest = async (
@@ -139,7 +103,6 @@ export const createPullRequest = async (
   resource: string,
   languages: string[],
   mode: InputMode,
-  issueNo: number,
   branch: string = 'master'
 ) => {
   core.info(`Creating pull request to ${branch}`);
@@ -152,7 +115,6 @@ export const createPullRequest = async (
     resource,
     languages,
     mode,
-    issueNo
   });
   const head = `feature/translations/${fullResource}`;
   const base = branch;
