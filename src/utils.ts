@@ -115,6 +115,7 @@ export const createPullRequest = async (
     resource,
     languages,
     mode,
+    branch,
   });
   const head = `feature/translations/${fullResource}`;
   const base = branch;
