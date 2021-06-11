@@ -8,8 +8,12 @@ import { inspect, promisify } from 'util';
 
 const readFileAsync = promisify(readFile);
 
-export type InputMode = 'untranslated' | 'translated' | 'reviewed' | 'proofread';
-export type TxMode = 'developer' | 'translated' | 'reviewed' | 'reviewed2' ;
+export type InputMode =
+  | 'untranslated'
+  | 'translated'
+  | 'reviewed'
+  | 'proofread';
+export type TxMode = 'developer' | 'translated' | 'reviewed' | 'reviewed2';
 
 const MODE_MAP: { [x in InputMode]: TxMode } = {
   untranslated: 'developer',
@@ -42,13 +46,15 @@ const runShellCommand = async (commandString: string) => {
  * @param languages The languages to pull, i.e.: ['fr', 'de']
  * @param mode "translated" | "reviewed" | "proofread"
  * @param branch Base branch to pull changes from reading the correct .tx/config
+ * @param txWorkDir Path in the repo in which to run the transifex commands (e.g. my/project/directory )
  */
 export const pullTranslations = async (
   project: string,
   resource: string,
   languages: string[],
   mode: InputMode,
-  branch: string
+  branch: string,
+  txWorkDir: string
 ) => {
   core.info(`Pulling translations from Transifex`);
   const fullResource = `${project}.${resource}`;
@@ -59,7 +65,7 @@ export const pullTranslations = async (
   }
 
   await runShellCommand(
-    `tx pull --mode ${MODE_MAP[mode]} -f -l ${languages.join(
+    `cd ${txWorkDir} && tx pull --mode ${MODE_MAP[mode]} -f -l ${languages.join(
       ','
     )} -r ${fullResource}`
   );
@@ -115,7 +121,7 @@ export const createPullRequest = async (
     resource,
     languages,
     mode,
-    branch,
+    branch
   });
   const head = `feature/translations/${fullResource}`;
   const base = branch;
