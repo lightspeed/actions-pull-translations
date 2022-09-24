@@ -1,9 +1,9 @@
 {
   "name": "pull-translations",
   "author": "Lightspeed HQ",
-  "version": "0.0.3",
+  "version": "0.0.6",
   "private": true,
-  "description": "Pulls translations from Transifex and create a PR on GithHub",
+  "description": "Pulls translations from Transifex and create a PR on GitHub",
   "main": "dist/entrypoint.js",
   "scripts": {
     "test": "echo \"Error: no test specified\"",
