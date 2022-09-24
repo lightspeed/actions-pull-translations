@@ -69,7 +69,6 @@ export const pullTranslations = async (
  * Creates a branch, makes a commit, and pushes the changes to the remote
  * @param project The project namespace, i.e.: retail-pos-web
  * @param resource The resource name, i.e.: retail-reports
- * @param branch Base branch to push changes from, default "master"
  */
 export const pushChangesToRemote = async (
   project: string,
@@ -121,17 +120,68 @@ export const createPullRequest = async (
   const base = branch;
 
   const token = process.env.GITHUB_TOKEN!;
-  const octokit = new github.GitHub(token);
+  const octokit = github.getOctokit(token);
 
   try {
-    await octokit.pulls.create({
+    const response = await octokit.rest.pulls.create({
       ...github.context.repo,
       head,
       base,
       title,
       body
     });
+    return await response.data.number;
   } catch (err) {
     core.info(`Failed to create PR: ${err.message}`);
+  }
+};
+
+/**
+ * Add the workflow actor as assignee to the PR
+ * @param pullRequest The pull request number
+ * @param addPullerAsAssignee Whether to add the workflow actor as assignee
+ */
+export const addAssignee = async (
+  pullRequest: number,
+  addPullerAsAssignee: boolean
+) => {
+  if (!addPullerAsAssignee) { return; }
+
+  const token = process.env.GITHUB_TOKEN!;
+  const octokit = github.getOctokit(token);
+
+  try {
+    await octokit.rest.issues.addAssignees({
+      ...github.context.repo,
+      issue_number: pullRequest,
+      assignees: [github.context.actor]
+    });
+  } catch (err) {
+    core.info(`Failed to add assignees: ${err.message}`);
+  }
+};
+
+/**
+ * Add the workflow actor as reviewer to the PR
+ * @param pullRequest The pull request number
+ * @param addPullerAsAssignee Whether to add the workflow actor as reviewer
+ */
+export const requestReviewer = async (
+  pullRequest: number,
+  addPullerAsReviewer: boolean
+) => {
+  if (!addPullerAsReviewer) { return; }
+
+  const token = process.env.GITHUB_TOKEN!;
+  const octokit = github.getOctokit(token);
+
+  try {
+    await octokit.rest.pulls.requestReviewers({
+      ...github.context.repo,
+      pull_number: pullRequest,
+      reviewers: [github.context.actor]
+    });
+  } catch (err) {
+    core.info(`Failed to request reviewers: ${err.message}`);
   }
 };

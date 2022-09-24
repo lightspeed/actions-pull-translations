@@ -12,8 +12,8 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@actions/core": "^1.2.0",
-    "@actions/github": "^1.1.0",
+    "@actions/core": "^1.9.1",
+    "@actions/github": "^5.1.0",
     "execa": "^3.4.0",
     "lodash": "^4.17.15",
     "mustache": "^3.0.3"

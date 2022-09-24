@@ -3,6 +3,8 @@ import {
   pullTranslations,
   pushChangesToRemote,
   createPullRequest,
+  addAssignee,
+  requestReviewer,
   InputMode,
 } from './utils';
 
@@ -14,9 +16,16 @@ const run = async () => {
   const mode: InputMode = core.getInput('mode', { required: true }) as InputMode;
   const branch = core.getInput('branch', { required: true });
 
+  const addPullerAsAssignee = core.getBooleanInput('addPullerAsAssignee');
+  const addPullerAsReviewer = core.getBooleanInput('addPullerAsReviewer');
+
   await pullTranslations(project, resource, languages, mode, branch);
   await pushChangesToRemote(project, resource);
-  await createPullRequest(project, resource, languages, mode, branch);
+  const pullRequest = await createPullRequest(project, resource, languages, mode, branch);
+  if (pullRequest) {
+    await addAssignee(pullRequest, addPullerAsAssignee);
+    await requestReviewer(pullRequest, addPullerAsReviewer);
+  }
   core.info(`Done processing new translations for ${resource}`);
 };
 
