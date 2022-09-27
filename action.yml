@@ -23,3 +23,9 @@ inputs:
     description: "Branch name"
     default: "master"
     required: true
+  addPullerAsAssignee:
+    description: "Add workflow actor for the pull action as assignee"
+    required: false
+  addPullerAsReviewer:
+    description: "Add workflow actor for the pull action as reviewer"
+    required: false
