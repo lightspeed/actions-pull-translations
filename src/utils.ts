@@ -8,15 +8,16 @@ import { inspect, promisify } from 'util';
 
 const readFileAsync = promisify(readFile);
 
-export type InputMode = 'untranslated' | 'translated' | 'reviewed' | 'proofread';
-export type TxMode = 'developer' | 'translated' | 'reviewed' | 'reviewed2' ;
-
-const MODE_MAP: { [x in InputMode]: TxMode } = {
-  untranslated: 'developer',
-  translated: 'translated',
-  reviewed: 'reviewed',
-  proofread: 'reviewed2'
-};
+export type InputMode =
+    'default'
+    | 'reviewed'
+    | 'proofread'
+    | 'translator'
+    | 'untranslated'
+    | 'onlytranslated'
+    | 'onlyreviewed'
+    | 'onlyproofread'
+    | 'sourceastranslation';
 
 /**
  * Runs a shell command and dumps the output to the GitHub Actions log
@@ -40,7 +41,9 @@ const runShellCommand = async (commandString: string) => {
  * @param project The project namespace, i.e.: retail-pos-web
  * @param resource The resource name, i.e.: retail-reports
  * @param languages The languages to pull, i.e.: ['fr', 'de']
- * @param mode "translated" | "reviewed" | "proofread"
+ * @param mode The translation mode of the downloaded file. This can be one of the following:
+ * 'default', 'reviewed', 'proofread', 'translator', 'untranslated',
+ * 'onlytranslated', 'onlyreviewed', "'onlyproofread', 'sourceastranslation'
  * @param branch Base branch to pull changes from reading the correct .tx/config
  */
 export const pullTranslations = async (
@@ -59,7 +62,7 @@ export const pullTranslations = async (
   }
 
   await runShellCommand(
-    `tx pull --mode ${MODE_MAP[mode]} -f -l ${languages.join(
+    `tx pull --mode ${mode} -f -l ${languages.join(
       ','
     )} -r ${fullResource}`
   );
@@ -94,7 +97,9 @@ export const pushChangesToRemote = async (
  * @param project The project namespace, i.e.: retail-pos-web
  * @param resource The resource name, i.e.: retail-reports
  * @param languages The languages to pull, i.e.: ['fr', 'de']
- * @param mode "translated" | "reviewed" | "proofread"
+ * @param mode The translation mode of the downloaded file. This can be one of the following:
+ * 'default', 'reviewed', 'proofread', 'translator', 'untranslated',
+ * 'onlytranslated', 'onlyreviewed', "'onlyproofread', 'sourceastranslation'
  * @param branch The base branch to create the PR
  */
 export const createPullRequest = async (
