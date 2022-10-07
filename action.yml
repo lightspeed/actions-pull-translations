@@ -16,7 +16,7 @@ inputs:
     default: "fr,de,nl,es"
     required: true
   mode:
-    description: "Mode to pull translations (untranslated, translated, reviewed, proofread)"
+    description: "Mode to pull translations ('default', 'reviewed', 'proofread', 'translator', 'untranslated', 'onlytranslated', 'onlyreviewed', 'onlyproofread', 'sourceastranslation'"
     default: "reviewed"
     required: true
   branch:
